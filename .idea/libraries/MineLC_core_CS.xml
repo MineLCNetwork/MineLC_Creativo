@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MineLC_core_CS">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../MineLC_Survival/MineLC_core_CS.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

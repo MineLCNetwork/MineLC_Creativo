@@ -1,0 +1,63 @@
+name: MineLC_Creativo
+main: com.minelc.Creativo.CreativolMain
+version: 1.3
+api-version: 1.15
+depend: [MineLC_CORE]
+commands:
+   minelc:
+      description: MineLC comando.
+      usage: /<command> [args]
+   gamemode:
+      description: Cambia tu modo de juego
+      usage: /<command> [args]
+      aliases: [gm]
+   fly:
+      description: flay.
+      usage: /<command> [args]
+   teleport:
+      description: teleportac.
+      usage: /<command> [args]
+      aliases: [tp]
+   teleportworld:
+      description: teleportac.
+      usage: /<command> [args]
+      aliases: [tpworld]
+   spawn:
+      description: spawn.
+      usage: /<command> [args]
+      aliases: [inicio, regresar]
+   nick:
+      description: nick.
+      usage: /<command> [args]
+   realname:
+      description: rialneim.
+      usage: /<command> [args]
+   report:
+     description: Reportar.
+     aliases: [helpop, reportar]
+   mem:
+     description: info
+   vanish:
+      description: vanish.
+      usage: /<command> [args]
+      aliases: [v]
+   tpa:
+     description: tpa
+   sit:
+     description: sit
+   tpaccept:
+     description: tpaccept
+     aliases: [tpasi]
+   tpdeny:
+     description: tpdeny
+     aliases: [tpano]
+   s:
+     description: s
+   tphere:
+     description: tphere
+     aliases: teleporthere
+   near:
+     description: Encuentra los jugadores más cercanos a ti
+   tell:
+     description: Envía un mensaje privado a alguien
+     aliases: [w, whisper, msg]
