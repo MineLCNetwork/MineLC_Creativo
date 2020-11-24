@@ -1,8 +1,13 @@
 package com.minelc.Creativo.listeners;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
+import com.github.intellectualsites.plotsquared.bukkit.events.PlayerEnterPlotEvent;
+import com.github.intellectualsites.plotsquared.bukkit.events.PlayerLeavePlotEvent;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -26,11 +31,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -38,10 +39,7 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.*;
 
 import com.google.common.collect.Maps;
 import com.minelc.CORE.CoreMain;
@@ -78,7 +76,7 @@ public class PlayerListener implements Listener {
 	  public void onPreCommand(PlayerCommandPreprocessEvent event)
 	  {
 		String msg = event.getMessage().toLowerCase();
-		String[] args = msg.split("\\s+");
+			String[] args = msg.split("\\s+");
 	    if ((msg.startsWith("/worldedit:/calc")) || 
 	      (msg.startsWith("/worldedit:/eval")) || 
 	      (msg.startsWith("/worldedit:/solve")) || 
@@ -94,14 +92,14 @@ public class PlayerListener implements Listener {
 	      Bukkit.getLogger().log(Level.INFO, "AntiCrash: " +player.getName()+" intentó usar "+ msg);
 	    }
 
-	    if((msg.startsWith("/plot")) || (msg.startsWith("/2")) || (msg.startsWith("/plots")) || (msg.startsWith("/ps")) || (msg.startsWith("/plotme")) || (msg.startsWith("/p2"))) {
+	    if((msg.startsWith("/2")) || (msg.startsWith("/plots")) || (msg.startsWith("/ps")) || (msg.startsWith("/plotme")) || (msg.startsWith("/p2"))) {
 	    	event.setCancelled(true);
 	    	Player player = event.getPlayer();
-	    	player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6P2&8] &cPor favor, inicie sus comandos con /p en vez de " + args[0]));
-			Bukkit.getLogger().log(Level.INFO, "INFORMACIÓN: " +player.getName()+" intentó usar el prefijo de P2 <<" + args[0] + ">> con el comando " + msg);
+	    	player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6P2&8] &cPor favor inicie sus comandos con \"/p\" en vez de " + args[0]));
+			Bukkit.getLogger().log(Level.INFO, "AntiGrief: " +player.getName()+" intentó usar el prefijo de P2 <<" + args[0] + ">> con el comando " + msg);
 		}
 
-	    if (msg.startsWith("/p set border")) {
+	    if (msg.startsWith("/p set border") || (msg.startsWith("/plot set border"))) {
 	    	if(event.getPlayer().hasPermission("svip.general")) {
 				if (!args[3].startsWith("44:")) {
 					event.setCancelled(true);
@@ -339,13 +337,18 @@ public class PlayerListener implements Listener {
 			e.getPlayer().hidePlayer(vanished);
 		}
 
+		for (Player all : Bukkit.getOnlinePlayers()) {
+			Jugador jugall = Jugador.getJugador(all);
+			setScoreboard(jugall);
+		}
+
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CreativolMain.get(), new Runnable() {
 			@Override
 			public void run() {
 				onJoin(e.getPlayer());
-				Bukkit.getLogger().info("Se ha dado al usuario " + e.getPlayer().getName() + " el onJoin. Qué lindo.");
+				Bukkit.getLogger().info("[Debug] Se ha cargado el usuario " + e.getPlayer().getName() + " (onJoin).");
 			}
-		}, 20L);
+		}, 10L);
 	}
 	
 	private void bucle(Player p4) {
@@ -365,72 +368,67 @@ public class PlayerListener implements Listener {
 		}, 0L,20);
 		
 	}
-	
 
-	private void onJoin(Player p) {
-		Jugador j = Jugador.getJugador(p);
-		Player enlineados = j.getBukkitPlayer();
-		// Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+	private String formatoScoreboard(String str, Jugador jug) {
+		Player p = jug.getBukkitPlayer();
 
-		j.getBukkitPlayer().setScoreboard(scoreboard);
-		p.setScoreboard(scoreboard);
-
-		// Se dan los permisos
-
-			if(j.is_VIP()) {
-				addPermissionVIP(p);
-			}
-			
-			if(j.is_SVIP()) {
-				addPermissionSVIP(p);
-			}
-			
-			if(j.is_ELITE()) {
-				addPermissionELITE(p);
-			}
-			if(j.is_RUBY() || j.is_BUILDER()) {
-				addPermissionsRuby(p);
-			}
-			if(j.is_MODERADOR()) {
-				addPermissionMOD(p);
-			}
-			if(j.is_Admin() || isAdmod(p) || j.is_Owner()) {
-				addPermissionAdmin(p);
-			}
-
-		Objective objGame = scoreboard.getObjective("Creativo");
-
-		if(objGame != null) {
-			objGame = scoreboard.registerNewObjective("Creativo", "info", "plots");
-			objGame.setDisplaySlot(DisplaySlot.SIDEBAR);
-			objGame.setDisplayName(ChatColor.BOLD + "" + ChatColor.AQUA + "Creativo");
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&7&m+------------------------+")).setScore(13);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fNick: &7") + enlineados.getName() ).setScore(12);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', " ")).setScore(11);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fDinero: &a${{pendiente}}")).setScore(10);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', " ")).setScore(9);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fRango: ") + j.getNameTagColor() + j.getRank()).setScore(8);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', " ")).setScore(7);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fEstás en &b") + enlineados.getWorld().getName()).setScore(6);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', " ")).setScore(5);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fParcela: &6{{pendiente}}")).setScore(4);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', " ")).setScore(3);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&8» &fIP: &eplay.minelc.net")).setScore(3);
-			objGame.getScore(ChatColor.translateAlternateColorCodes('&', "&7&m+------------------------+")).setScore(1);
+		if(p.getLocation().getWorld().getName().equals("vip")) {
+			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("vip-world", "&b&lVIP"));
+		} else if(p.getLocation().getWorld().getName().equals("plots")) {
+			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("normal-world", "&cParcelas"));
+		} else {
+			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("unknown-world", "&9&oNarnia"));
 		}
 
-			// Se da el SCOREBOARD y se fija.
-        for (Player enlinea : Bukkit.getOnlinePlayers()) {
-        	Jugador jugTM = Jugador.getJugador(enlinea);
+		if(PlaceholderAPI.setPlaceholders(p.getPlayer(), "%plotsquared_currentplot_owner%").isEmpty()) {
+			str = str.replace("$current-plot-formatted$", CreativolMain.get().getStringConfig("world", "&6Ninguna"));
+		} else {
+			str = str.replace("$current-plot-formatted$", "&7(&6%plotsquared_currentplot_x%;%plotsquared_currentplot_y%&7) &6%plotsquared_currentplot_owner%");
+		}
 
-        	try {
-				Team tm = scoreboard.getTeam(jugTM.getBukkitPlayer().getName());
+		str = str.replace("$online$", Bukkit.getServer().getOnlinePlayers().size() + "");
+		str = str.replace("$maxuser$", Bukkit.getServer().getMaxPlayers() + "");
 
-				if (tm != null) {
+		return PlaceholderAPI.setPlaceholders(p.getPlayer(), ChatColor.translateAlternateColorCodes('&', str));
+	}
+
+	public void setScoreboard(Jugador jugOnline) {
+		Player Online = jugOnline.getBukkitPlayer();
+
+		Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+		// jugOnline.getBukkitPlayer().setScoreboard(sb);
+
+		Objective objGame = sb.getObjective("Creativo");
+
+		if(objGame == null) {
+			objGame = sb.registerNewObjective("Creativo", "dummy");
+
+			objGame.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+			objGame.setDisplayName(ChatColor.AQUA+""+ChatColor.BOLD+"Creativo");
+
+			List<String> rows = CreativolMain.get().getConfig().getStringList("mensajes.scoreboard");
+			int x = rows.size();
+
+			for (String row : rows) {
+				objGame.getScore(formatoScoreboard(row, jugOnline)).setScore(x);
+				x--;
+			}
+		}
+
+
+
+		for(Player tmOnline : Bukkit.getOnlinePlayers()) {
+			Jugador jugTM = Jugador.getJugador(tmOnline);
+
+			try {
+				Team tm = sb.getTeam(jugTM.getBukkitPlayer().getName());
+
+				if(tm != null) {
 					continue;
 				}
 
-				tm = scoreboard.registerNewTeam(jugTM.getBukkitPlayer().getName());
+				tm = sb.registerNewTeam(jugTM.getBukkitPlayer().getName());
 
 				if (jugTM.isHideRank()) {
 					tm.setPrefix(ChatColor.GRAY + "");
@@ -438,7 +436,7 @@ public class PlayerListener implements Listener {
 				} else if (jugTM.is_Owner()) {
 					tm.setPrefix(ChatColor.DARK_RED+""+ChatColor.BOLD+Ranks.OWNER.name()+" "+jugTM.getNameTagColor());
 					tm.setColor(jugTM.getNameTagColor());
-				} else if (isAdmod(p)) {
+				} else if (isAdmod(tmOnline)) {
 					tm.setPrefix(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "AD" + ChatColor.WHITE + "" + ChatColor.BOLD + Ranks.MOD.name() + " " + jugTM.getNameTagColor());
 					tm.setColor(jugTM.getNameTagColor());
 				} else if (jugTM.is_Admin()) {
@@ -476,63 +474,111 @@ public class PlayerListener implements Listener {
 					tm.setColor(ChatColor.GRAY);
 				}
 
-				tm.addEntry(enlinea.getName());
-				jugTM.getBukkitPlayer().setScoreboard(scoreboard); // cambié esto
-				p.setScoreboard(scoreboard);
-
-				//Logger
-				Bukkit.getLogger().info("El teamprefix de " + jugTM.getPlayerName() + " es este: " + tm.getPrefix());
-				Bukkit.getLogger().info("El teamColor de " + jugTM.getPlayerName() + "es este: " + tm.getPrefix());
-			} catch (Exception elerror) {
-        		elerror.printStackTrace();
+				tm.addEntry(tmOnline.getName());
+				// tmOnline.setScoreboard(scoreboard);
+			} catch(Exception ex) {
+				ex.printStackTrace();
 			}
 		}
-		/*	try {
-				Team tm = scoreboard.registerNewTeam(p.getName());
-				if(j.isHideRank())
-					tm.setPrefix(ChatColor.GRAY.toString());
-				else if (isAdmod(p))
-				{
-					tm.setPrefix(ChatColor.DARK_AQUA+""+ChatColor.BOLD+"AD"+ChatColor.WHITE+""+ChatColor.BOLD+Ranks.MOD.name()+" "+j.getNameTagColor());
+
+		for(Player tmOnline : Bukkit.getOnlinePlayers()) {
+			Scoreboard sbTM = tmOnline.getScoreboard();
+			try {
+
+				if(sbTM == null) {
+					continue;
 				}
-				else if(j.is_Owner())
-					tm.setPrefix(ChatColor.DARK_RED+""+ChatColor.BOLD+Ranks.OWNER.name()+" "+j.getNameTagColor());
-				else if(j.is_Admin())
-					tm.setPrefix(ChatColor.RED+""+ChatColor.BOLD+Ranks.ADMIN.name()+" "+j.getNameTagColor());
-				else if(j.is_MODERADOR())
-					tm.setPrefix(ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.MOD.name()+" "+j.getNameTagColor());
-				else if(j.is_AYUDANTE())
-					tm.setPrefix(ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.AYUDANTE.name()+" "+j.getNameTagColor());
-				else if(j.is_YOUTUBER()) {
-					String youtuber = ChatColor.RED+""+ChatColor.BOLD+"YouTuber ";
-					tm.setPrefix(youtuber+j.getNameTagColor());
+				Team tm = sbTM.getTeam(jugOnline.getBukkitPlayer().getName());
+
+				if(tm != null) {
+					continue;
 				}
-				else if(j.is_BUILDER())
-					tm.setPrefix(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+j.getNameTagColor());
-				else if(j.is_RUBY())
-					tm.setPrefix(ChatColor.RED+""+ChatColor.BOLD+Ranks.RUBY.name()+" "+j.getNameTagColor());
-				else if(j.is_ELITE())
-					tm.setPrefix(ChatColor.GOLD+""+ChatColor.BOLD+Ranks.ELITE.name()+" "+j.getNameTagColor());
-				else if(j.is_SVIP())
-					tm.setPrefix(ChatColor.GREEN+""+ChatColor.BOLD+Ranks.SVIP.name()+" "+j.getNameTagColor());
-				else if(j.is_VIP())
-					tm.setPrefix(ChatColor.AQUA+""+ChatColor.BOLD+Ranks.VIP.name()+" "+j.getNameTagColor());
-				else if(j.is_Premium())
-					tm.setPrefix(ChatColor.YELLOW.toString());
-				else
-					tm.setPrefix(ChatColor.GRAY.toString());
 
-				//if(ProtocolSupportAPI.getProtocolVersion(p) == ProtocolVersion.MINECRAFT_1_9_MLC) {
-					//tm.setPrefix(tm.getPrefix()+ChatColor.UNDERLINE);
-				//}
+				tm = sbTM.registerNewTeam(jugOnline.getBukkitPlayer().getName());
 
-				tm.addPlayer(p);
-					} catch(Exception ex) {
-						ex.printStackTrace();
-					} */
+				if (jugOnline.isHideRank()) {
+					tm.setPrefix(ChatColor.GRAY + "");
+					tm.setColor(ChatColor.GRAY);
+				} else if (jugOnline.is_Owner()) {
+					tm.setPrefix(ChatColor.DARK_RED+""+ChatColor.BOLD+Ranks.OWNER.name()+" "+jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (isAdmod(jugOnline.getBukkitPlayer())) {
+					tm.setPrefix(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "AD" + ChatColor.WHITE + "" + ChatColor.BOLD + Ranks.MOD.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_Admin()) {
+					tm.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + Ranks.ADMIN.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_MODERADOR()) {
+					tm.setPrefix(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + Ranks.MOD.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_AYUDANTE()) {
+					tm.setPrefix(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + Ranks.AYUDANTE.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_YOUTUBER()) {
+					tm.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + "YouTuber " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_BUILDER()) {
+					tm.setPrefix(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_RUBY()) {
+					tm.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + Ranks.RUBY.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_ELITE()) {
+					tm.setPrefix(ChatColor.GOLD + "" + ChatColor.BOLD + Ranks.ELITE.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_SVIP()) {
+					tm.setPrefix(ChatColor.GREEN + "" + ChatColor.BOLD + Ranks.SVIP.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_VIP()) {
+					tm.setPrefix(ChatColor.AQUA + "" + ChatColor.BOLD + Ranks.VIP.name() + " " + jugOnline.getNameTagColor());
+					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_Premium()) {
+					tm.setPrefix(ChatColor.YELLOW + "");
+					tm.setColor(ChatColor.YELLOW);
+				} else {
+					tm.setPrefix(ChatColor.GRAY + "");
+					tm.setColor(ChatColor.GRAY);
+				}
 
-		p.setScoreboard(scoreboard);
-		j.getBukkitPlayer().setScoreboard(scoreboard);
+				tm.addEntry(jugOnline.getBukkitPlayer().getName());
+			} catch(Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+
+		jugOnline.getBukkitPlayer().setScoreboard(sb);
+	}
+
+	private void onJoin(Player p) {
+		Jugador j = Jugador.getJugador(p);
+		Player enlineados = j.getBukkitPlayer();
+		// Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+
+		// j.getBukkitPlayer().setScoreboard(scoreboard);
+		// p.setScoreboard(scoreboard);
+
+		// Se dan los permisos
+
+			if(j.is_VIP()) {
+				addPermissionVIP(p);
+			}
+			
+			if(j.is_SVIP()) {
+				addPermissionSVIP(p);
+			}
+			
+			if(j.is_ELITE()) {
+				addPermissionELITE(p);
+			}
+			if(j.is_RUBY() || j.is_BUILDER()) {
+				addPermissionsRuby(p);
+			}
+			if(j.is_MODERADOR()) {
+				addPermissionMOD(p);
+			}
+			if(j.is_Admin() || isAdmod(p) || j.is_Owner()) {
+				addPermissionAdmin(p);
+			}
 	}
 	
 
@@ -589,6 +635,8 @@ public class PlayerListener implements Listener {
 				Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó ingresar al VIP pero no era VIP o no tenía un tiquete VIP!");
 			}
 		}
+
+		setScoreboard(Jugador.getJugador(e.getPlayer()));
 	}
 	
 	@EventHandler
@@ -769,134 +817,151 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		e.setQuitMessage(null);
-		//Jugador jug = Jugador.getJugador(e.getPlayer());
+		// Jugador jug = Jugador.getJugador(e.getPlayer());
 		Jugador.removeJugador(e.getPlayer().getName());
-		scoreboard.getTeam(e.getPlayer().getName()).unregister();
+		// scoreboard.getTeam(e.getPlayer().getName()).unregister();
 		if(interact_cd.containsKey(e.getPlayer())) {
 			interact_cd.remove(e.getPlayer());
 		}
+		for (Player all : Bukkit.getOnlinePlayers()) {
+			Jugador jugall = Jugador.getJugador(all);
+			setScoreboard(jugall);
+		}
 		CreativolMain.get().removeVanished(e.getPlayer());
+	}
+
+	@EventHandler
+	public void onKill(PlayerDeathEvent e) {
+		e.setDeathMessage(null);
 	}
 	
 	@EventHandler
 	public void onKick(PlayerKickEvent e) {
 		e.setLeaveMessage(null);
 	}
-	
-	//PERMISOS NUEVOS
 
 	public void addPermissionDefault(Player p) {
-	    p.addAttachment(CoreMain.getInstance(), "plotme.use.remove", true);
-	    p.addAttachment(CoreMain.getInstance(), "plotme.use.add", true);	    
-	    p.addAttachment(CoreMain.getInstance(), "plots.plot.1", true);
-	    p.addAttachment(CoreMain.getInstance(), "plotme.use", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.visit", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.visit.other", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.set", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.set.flag", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.permpack.basic", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.permpack.basicflags", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.set.flag.use.*", true);
-	    p.addAttachment(CoreMain.getInstance(), "marry.default", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.permpack.basicinbox", true);
-	    p.addAttachment(CoreMain.getInstance(), "menus.principal", true);
-	    p.addAttachment(CoreMain.getInstance(), "headdb.online.hide", true);
-	    p.addAttachment(CoreMain.getInstance(), "essentials.balance", true);
-	    p.addAttachment(CoreMain.getInstance(), "essentials.pay", true);
+	    List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.default");
+	    int numRows = rows.size();
+
+        if(rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        for(String row : rows) {
+        	if(row.startsWith("-")) {
+        		StringBuilder sb = new StringBuilder(row);
+        		String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+        		// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+            	p.addAttachment(CoreMain.getInstance(), row, true);
+        	}
+            // Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+        }
 	}
 	
 	public void addPermissionVIP(Player p) {
-	    p.addAttachment(CoreMain.getInstance(), "plots.plot.10", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.merge.4", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.music", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.set.flag.music.*", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.set.flag.titles.*", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.sphere", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.cylinder", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.clipboard", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.smooth", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.ex", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.gravity", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.brush.butcher", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.wand", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.copy", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.cut", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.paste", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.generation.cylinder", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.generation.sphere", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.generation.pyramid", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.history.undo", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.history.redo", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.region.walls", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.region.naturalize", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.region.set", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.wand.toggle", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.selection.pos", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.superpickaxe", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.region.replace", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.selection.expand", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.rotate", true);
-	    p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.flip", true);
-	    p.addAttachment(CoreMain.getInstance(), "fawe.permpack.basic", true);
-	    p.addAttachment(CoreMain.getInstance(), "fawe.plotsquared", true);
-	    p.addAttachment(CoreMain.getInstance(), "fawe.plotsquared.member", true);
-		p.addAttachment(CoreMain.getInstance(), "menus.vip", true);
-		p.addAttachment(CoreMain.getInstance(), "vip.general", true);
-		p.addAttachment(CoreMain.getInstance(), "vip.world", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.gui", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.command.use", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.command.toggle", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.command.call", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.open", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.alphabet", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.animals", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.blocks", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.decoration", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.food_drinks", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.humans", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.humanoid", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.miscellaneous", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.monsters", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.category.plants", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.alphabet", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.animals", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.blocks", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.decoration", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.food_drinks", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.humans", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.humanoid", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.miscellaneous", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.monsters", true);
-		p.addAttachment(CoreMain.getInstance(), "headdb.allow.buy.plants", true);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.vip");
+		int numRows = rows.size();
+
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
 	}
 	public void addPermissionMOD(Player p) {
-		p.addAttachment(CoreMain.getInstance(), "plots.clear", true);
-		p.addAttachment(CoreMain.getInstance(), "plots.delete", true);
-		p.addAttachment(CoreMain.getInstance(), "plots.delete", true);
-		p.addAttachment(CoreMain.getInstance(), "plots.set.flag", true);
-		p.addAttachment(CoreMain.getInstance(), "plots.flag", true);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.mod");
+		int numRows = rows.size();
+
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
 	}
 	public void addPermissionSVIP(Player p) {
-		p.addAttachment(CoreMain.getInstance(), "worldedit.clipboard.rotate", true);
-	    p.addAttachment(CoreMain.getInstance(), "plots.plot.15", true);
-	    p.addAttachment(CoreMain.getInstance(), "petblocks.command.rename", true);
-	    p.addAttachment(CoreMain.getInstance(), "svip.general", true);
-	    p.addAttachment(CoreMain.getInstance(), "headdb.phead", true);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.svip");
+		int numRows = rows.size();
 
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
 	}
 	
 	public void addPermissionELITE(Player p) {
-		p.addAttachment(CoreMain.getInstance(), "plots.plot.30", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.command.customhead", true);
-		p.addAttachment(CoreMain.getInstance(), "elite.general", true);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.elite");
+		int numRows = rows.size();
+
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
 	}
 	public void addPermissionsRuby(Player p) {
-		 p.addAttachment(CoreMain.getInstance(), "plots.plot.45", true);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.ruby");
+		int numRows = rows.size();
+
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
 	}
-	
-	
-	//END PERMISOS NUEVOS
-	
 	/*
 	public void addPermissionAdmod(Player p) {
 	    p.addAttachment(CoreMain.getInstance(), "bukkit.*", true);
@@ -904,46 +969,37 @@ public class PlayerListener implements Listener {
 	    p.addAttachment(CoreMain.getInstance(), "*", true);
 	} */
 	public void addPermissionAdmin(Player p) {
-	    p.addAttachment(CoreMain.getInstance(), "bukkit.*", true);
-	    p.addAttachment(CoreMain.getInstance(), "minecraft.*", true);
-	    p.addAttachment(CoreMain.getInstance(), "*", true);
-	    // PERMISOS DE OVERRIDE POR EL MUNDO, PARA PROTEGER PLOTS DE NO TENER CARROS. --------------
-	    p.addAttachment(CoreMain.getInstance(), "Bikes.overrideWorld", false);
-	    p.addAttachment(CoreMain.getInstance(), "Cars.overrideWorld", false);
-	    p.addAttachment(CoreMain.getInstance(), "Trains.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Rafts.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Planes.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Parachutes.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Helicopters.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Tanks.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Submarines.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Brooms.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "HoverBikes.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Drills.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "SportBikes.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "RacingCars.overrideWorld", false);
-		p.addAttachment(CoreMain.getInstance(), "Tractors.overrideWorld", false);
-		// PERMISOS DE OVERRIDE EN DISMOUNT ---------------------------------------------------------------
-		p.addAttachment(CoreMain.getInstance(), "Bikes.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Cars.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Trains.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Rafts.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Planes.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Parachutes.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Helicopters.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Tanks.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Submarines.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "Brooms.overrideRemoveOnDismount ", false);
-		p.addAttachment(CoreMain.getInstance(), "HoverBikes.overrideRemoveOnDismount", false);
-		p.addAttachment(CoreMain.getInstance(), "Drills.overrideRemoveOnDismount", false);
-		p.addAttachment(CoreMain.getInstance(), "SportBikes.overrideRemoveOnDismount", false);
-		p.addAttachment(CoreMain.getInstance(), "RacingCars.overrideRemoveOnDismount", false);
-		p.addAttachment(CoreMain.getInstance(), "Tractors.overrideRemoveOnDismount", false);
-		// fin
-	    p.addAttachment(CoreMain.getInstance(), "itemjoin.bypass.inventorymodify", false);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.admin.command.pets", true);
-		p.addAttachment(CoreMain.getInstance(), "petblocks.admin.command.reload", true);
-		p.addAttachment(CoreMain.getInstance(), "perworldinventory.bypass.gamemode", false);
-		p.addAttachment(CoreMain.getInstance(), "perworldinventory.bypass.world", false);
+		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.admin");
+		int numRows = rows.size();
+
+		if(rows == null || rows.isEmpty()) {
+			return;
+		}
+
+		for(String row : rows) {
+			if(row.startsWith("-")) {
+				StringBuilder sb = new StringBuilder(row);
+				String rowdos = sb.deleteCharAt(0).toString();
+				p.addAttachment(CoreMain.getInstance(), rowdos, false);
+				// Bukkit.getLogger().info("Cargado permiso negativo " + rowdos + " para " + p.getName());
+			} else {
+				p.addAttachment(CoreMain.getInstance(), row, true);
+			}
+			// Bukkit.getLogger().info("[Debug] Se cargó el permiso <" + row + "> (" + !row.startsWith("-") + ") para el usuario " + p.getName() + ".");
+		}
+	}
+
+	@EventHandler
+	public void onPlayerEnterPlot(PlayerEnterPlotEvent e) {
+		Player p = e.getPlayer();
+
+		setScoreboard(Jugador.getJugador(p));
+	}
+
+	@EventHandler
+	public void onPlayerExitPlot(PlayerLeavePlotEvent e) {
+		Player p = e.getPlayer();
+
+		setScoreboard(Jugador.getJugador(p));
 	}
 }

@@ -1,5 +1,9 @@
 package com.minelc.Creativo;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -11,6 +15,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,7 +38,12 @@ public class CreativolMain extends JavaPlugin implements CommandExecutor{
             Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
             
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Timer(), 20L, 20L);
-            
+
+            this.saveDefaultConfig();
+            // this.loadConfigInUTF();
+            // this.saveConfig();
+            this.loadConfigInUTF();
+
             getCommand("nick").setExecutor(new cmdNick());            
             getCommand("fly").setExecutor(new CmdFly());
             getCommand("gamemode").setExecutor(new CmdGameMode());
@@ -45,7 +55,7 @@ public class CreativolMain extends JavaPlugin implements CommandExecutor{
            // getCommand("tell").setExecutor(new TellCmd());
             getCommand("report").setExecutor(new ReportCMD());
             getCommand("near").setExecutor(new cmdNear());
-            getCommand("sit").setExecutor(new Sit());
+            // getCommand("sit").setExecutor(new Sit());
             getCommand("tell").setExecutor(new CmdTell());
             getCommand("mem").setExecutor(new CommandExecutor() {
     			
@@ -272,6 +282,52 @@ public class CreativolMain extends JavaPlugin implements CommandExecutor{
 		}
 	}
 
+    public void loadConfigInUTF() {
+        File configFile = new File(this.getDataFolder(), "config.yml");
+        if(!configFile.exists()) {
+            return;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(configFile), "UTF-8"));
+            this.getConfig().load(reader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getIntConfig(String key, int defaultInt) {
+        FileConfiguration config = this.getConfig();
+        if(config.contains(key)) {
+            if(config.isInt(key)) {
+                return config.getInt(key);
+            }
+        }
+
+        return defaultInt;
+    }
+
+    public String getStringConfig(String key, String defaultString) {
+        FileConfiguration config = this.getConfig();
+        if(config.contains(key)) {
+            if(config.isString(key)) {
+                return config.getString(key);
+            }
+        }
+
+        return defaultString;
+    }
+
+    public boolean getBooleanConfig(String key, boolean defaultBool) {
+        FileConfiguration config = this.getConfig();
+        if(config.contains(key)) {
+            if(config.isBoolean(key)) {
+                return config.getBoolean(key);
+            }
+        }
+
+        return defaultBool;
+    }
 }
 
 

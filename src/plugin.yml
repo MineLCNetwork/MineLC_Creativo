@@ -1,39 +1,40 @@
 name: MineLC_Creativo
 main: com.minelc.Creativo.CreativolMain
-version: 1.3
+version: 1.5-RELASE
 api-version: 1.15
-depend: [MineLC_CORE]
+authors: [Leo018, obed_007, ElBuenAnvita]
+depend: [MineLC_CORE, PlaceholderAPI, PlotSquared]
 commands:
    minelc:
       description: MineLC comando.
       usage: /<command> [args]
    gamemode:
-      description: Cambia tu modo de juego
+      description: Cambia tu modo de juego.
       usage: /<command> [args]
       aliases: [gm]
    fly:
-      description: flay.
+      description: Habilita o deshabilita el vuelo.
       usage: /<command> [args]
    teleport:
-      description: teleportac.
+      description: Teletranspórtate a un usuario.
       usage: /<command> [args]
       aliases: [tp]
    teleportworld:
       description: teleportac.
       usage: /<command> [args]
-      aliases: [tpworld]
+      aliases: [tpworld, tpw]
    spawn:
-      description: spawn.
+      description: Ve al punto de aparición inicial.
       usage: /<command> [args]
       aliases: [inicio, regresar]
    nick:
-      description: nick.
+      description: Colocate un nombre de usuario distinto.
       usage: /<command> [args]
    realname:
-      description: rialneim.
+      description: Conoce el nombre verdadero de alguien.
       usage: /<command> [args]
    report:
-     description: Reportar.
+     description: Habla con el staff en línea de Creativo.
      aliases: [helpop, reportar]
    mem:
      description: info
@@ -42,19 +43,19 @@ commands:
       usage: /<command> [args]
       aliases: [v]
    tpa:
-     description: tpa
+     description: Pídele a un usuario el permiso de teletransportarse hacia él.
    sit:
      description: sit
    tpaccept:
-     description: tpaccept
+     description: Acepta una petición de tpa.
      aliases: [tpasi]
    tpdeny:
-     description: tpdeny
+     description: Niega una petición de tpa.
      aliases: [tpano]
    s:
      description: s
    tphere:
-     description: tphere
+     description: Forza a alguien a teletransportarse hacia ti.
      aliases: teleporthere
    near:
      description: Encuentra los jugadores más cercanos a ti
