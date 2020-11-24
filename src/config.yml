@@ -1,0 +1,209 @@
+# ========= MineLC Configuración =========
+#
+# YAML hecho por ElBuenAnvita
+# El plugin hecho por Leo018, modificado por obed_007 y por ElBuenAnvita, creo que Cemarquez también lo modificó.
+# Por favor mantener siempre un archivo de respaldo tipo .old_yml en caso de que hagas una pelotudez y se reinicie el archivo por error.
+# No cambiar la version-config a menos que sepas lo que estás haciendo.
+# No realizar NINGÚN cambio bajo la supervisión de un desarrollador (developer).
+#
+# ========= Fin MineLC Configuración =========
+version-config: 1
+
+permisos: # Si se quiere colocar un permiso NEGATIVO, colocar "-" al inicio. Ej: "-minecraft:me", esto negará rotundamente el permiso al usuario.
+  default:
+    - "default.general"
+    - "plotme.use.remove"
+    - "plotme.use.add"
+    - "plots.plot.1"
+    - "plotme.use"
+    - "plots.visit"
+    - "plots.visit.other"
+    - "plots.set"
+    - "plots.set.flag"
+    - "plots.permpack.basic"
+    - "plots.permpack.basicflags"
+    - "plots.set.flag.use.*"
+    - "marry.default"
+    - "plots.permpack.basicinbox"
+    - "menus.principal"
+    - "headdb.online.hide"
+    - "essentials.balance"
+    - "essentials.pay"
+    - "margaret.partnership"
+    - "margaret.partnership.*"
+    - "margaret.gender"
+    - "margaret.setting"
+    - "margaret.proposal"
+    - "margaret.list"
+    - "margaret.partnership.home.*"
+  vip:
+    - "vip.general"
+    - "plots.plot.10"
+    - "plots.merge.4"
+    - "plots.music"
+    - "plots.set.flag.music.*"
+    - "plots.set.flag.titles.*"
+    - "worldedit.brush.sphere"
+    - "worldedit.brush.cylinder"
+    - "worldedit.brush.clipboard"
+    - "worldedit.brush.smooth"
+    - "worldedit.brush.ex"
+    - "worldedit.brush.gravity"
+    - "worldedit.brush.butcher"
+    - "worldedit.wand"
+    - "worldedit.clipboard.copy"
+    - "worldedit.clipboard.cut"
+    - "worldedit.clipboard.paste"
+    - "worldedit.generation.cylinder"
+    - "worldedit.generation.sphere"
+    - "worldedit.generation.pyramid"
+    - "worldedit.history.undo"
+    - "worldedit.history.redo"
+    - "worldedit.region.walls"
+    - "worldedit.region.naturalize"
+    - "worldedit.region.set"
+    - "worldedit.wand.toggle"
+    - "worldedit.selection.pos"
+    - "worldedit.superpickaxe"
+    - "worldedit.region.replace"
+    - "worldedit.selection.expand"
+    - "worldedit.clipboard.rotate"
+    - "worldedit.clipboard.flip"
+    - "fawe.permpack.basic"
+    - "fawe.plotsquared"
+    - "fawe.plotsquared.member"
+    - "menus.vip"
+    - "vip.world"
+    - "petblocks.gui"
+    - "petblocks.command.use"
+    - "petblocks.command.toggle"
+    - "petblocks.command.call"
+    - "headdb.open"
+    - "headdb.category.alphabet"
+    - "headdb.category.animals"
+    - "headdb.category.blocks"
+    - "headdb.category.decoration"
+    - "headdb.category.food_drinks"
+    - "headdb.category.humans"
+    - "headdb.category.humanoid"
+    - "headdb.category.miscellaneous"
+    - "headdb.category.monsters"
+    - "headdb.category.plants"
+    - "headdb.allow.buy.alphabet"
+    - "headdb.allow.buy.animals"
+    - "headdb.allow.buy.blocks"
+    - "headdb.allow.buy.decoration"
+    - "headdb.allow.buy.food_drinks"
+    - "headdb.allow.buy.humans"
+    - "headdb.allow.buy.humanoid"
+    - "headdb.allow.buy.miscellaneous"
+    - "headdb.allow.buy.monsters"
+    - "headdb.allow.buy.plants"
+  svip:
+    - "svip.general"
+    - "headdb.phead"
+    - "petblocks.command.rename"
+    - "plots.plot.15"
+    - "worldedit.clipboard.rotate"
+  elite:
+    - "elite.general"
+    - "plots.plot.30"
+    - "petblocks.command.customhead"
+  ruby:
+    - "ruby.general"
+    - "plots.plot.45"
+  youtuber:
+    - "yt.general"
+  ayudante:
+    - "ayudante.general"
+  mod:
+    - "mod.general"
+  admod:
+    - "admod.general" # NO SE USA. MISMOS DE ADMIN. POR FAVOR NO REMOVER.
+  admin:
+    - "admin.general"
+    - "*"
+    - "bukkit.*"
+    - "minecraft.*"
+    - "-Bikes.overrideWorld"
+    - "-Cars.overrideWorld"
+    - "-Trains.overrideWorld"
+    - "-Rafts.overrideWorld"
+    - "-Planes.overrideWorld"
+    - "-Parachutes.overrideWorld"
+    - "-Helicopters.overrideWorld"
+    - "-Tanks.overrideWorld"
+    - "-Submarines.overrideWorld"
+    - "-Brooms.overrideWorld"
+    - "-HoverBikes.overrideWorld"
+    - "-Drills.overrideWorld"
+    - "-SportBikes.overrideWorld"
+    - "-RacingCars.overrideWorld"
+    - "-Tractors.overrideWorld"
+    - "-Bikes.overrideRemoveOnDismount"
+    - "-Cars.overrideRemoveOnDismount"
+    - "-Trains.overrideRemoveOnDismount"
+    - "-Rafts.overrideRemoveOnDismount"
+    - "-Planes.overrideRemoveOnDismount"
+    - "-Parachutes.overrideRemoveOnDismount"
+    - "-Helicopters.overrideRemoveOnDismount"
+    - "-Tanks.overrideRemoveOnDismount"
+    - "-Submarines.overrideRemoveOnDismount"
+    - "-Brooms.overrideRemoveOnDismount"
+    - "-HoverBikes.overrideRemoveOnDismount"
+    - "-Drills.overrideRemoveOnDismount"
+    - "-SportBikes.overrideRemoveOnDismount"
+    - "-RacingCars.overrideRemoveOnDismount"
+    - "-Tractors.overrideRemoveOnDismount"
+    - "-itemjoin.bypass.inventorymodify"
+    - "petblocks.admin.command.pets"
+    - "petblocks.admin.command.reload"
+    - "-perworldinventory.bypass.gamemode"
+    - "-perworldinventory.bypass.world"
+  owner:
+    - "owner.general" # NO SE USA. MISMOS DE ADMIN. POR FAVOR NO REMOVER.
+
+mensajes:
+  bienvenida: # Espero implementar esto pronto. No funciona aún.
+    - "&7&m-------------------"
+    - "&3&lMine&6&lLC &b&lNetwork"
+    - "&b&lCreativo"
+    - "&f¡Bienvenido, $user$!"
+    - "&7&m------------------"
+  scoreboard:
+    # Funciona con PlaceholderAPI si está instalado y si la expansión lo está igual.
+    # LC tiene expansión propia de igual modo.
+    # Una línea NO puede ser igual que la otra. Si se necesita espaciar, deje espacios distintos en cada caso.
+    - "&7&m+-----------------------+"
+    - "&8» &fUsuario: &7%player_name%"
+    - "      "
+    - "&8» &fDinero: &a$%vault_eco_balance_fixed%"
+    - "&8» &fRango: %lc_rankcolors%"
+    - "    "
+    - "&8» &fMundo: $mundo$"
+    - "&8» &fPlot: $current-plot-formatted$"
+    - "  "
+    - "&8» &fConectados: &3$online$&7/&3$maxuser$"
+    - "&8» &fIP: &eplay.minelc.net"
+    - "&7&m+------------------------+"
+  titles:
+    - "&b&lCreativo" # Título
+    - "&7¡Bienvenido, $user$!" # Subtítulo
+
+admod-user: "ElBuenAnvita" # Esto en realidad no funciona, jaja
+
+no-standing-plot-message: "&6Ninguna" # Esto aparecerá cuando el usuario no ande dentro de una parcela.
+
+# Esto es como el usuario en el scoreboard vería el mundo en el que está
+vip-world: "&b&lVIP" # Si está en el mundo VIP
+normal-world: "&cParcelas" # Si está en el mundo "parcelas"
+unknown-world: "&9&oNarnia" # Si está en otro mundo distinto al vip o parcelas.
+
+save-location-in-vip: false # Si el usuario se desconecta estando en VIP, ¿se deberá guardar o no su ubicación? Por cuestiones de programación, siempre será false por el momento.
+prevent-nonvip-users-in-vip: true # Prevenir los usuarios de estar en el mundo VIP o no. PRONTO
+prevent-nonvip-users-from-claim-plot-in-vip: true # Prevenir que los usuarios sin el permiso "vip.world" compren/claimeen una parcela. PRONTO
+
+cooldown-time-mincecart: 5000 # No funciona
+cooldown-time-vehicles: 7000 # No funciona
+
+debug: false # Debug. Tampoco funciona
