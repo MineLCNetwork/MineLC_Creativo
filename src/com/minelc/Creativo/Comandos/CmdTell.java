@@ -21,7 +21,7 @@ public class CmdTell implements CommandExecutor {
                 p.sendMessage(ChatColor.RED + "El jugador "+args[0]+" no está conectado.");
             } else {
                 p.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + "yo" + ChatColor.GOLD + " -> " + ChatColor.RED + r.getName() + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
-                r.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + p.getName() + ChatColor.GOLD + ChatColor.GOLD + " -> "+ChatColor.RED + "yo"  + "] " + ChatColor.WHITE + msg);
+                r.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + p.getName() + ChatColor.GOLD + ChatColor.GOLD + " -> "+ChatColor.RED + "yo"  + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
             }
         }
 

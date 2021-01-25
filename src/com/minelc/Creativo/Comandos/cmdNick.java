@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,8 +47,16 @@ public class cmdNick implements CommandExecutor {
 		} else if(args.length == 1) {
 			if(p.getName().equals("obed_007") || jug.is_VIP()|| jug.is_BUILDER() || jug.is_ELITE() || jug.is_RUBY() || jug.is_SVIP() || jug.is_AYUDANTE()||
 			   jug.is_MODERADOR() || jug.is_Admin() || jug.is_Owner()) {
-				String nick = ChatColor.BLACK+"~" + ChatColor.GRAY + "" +ChatColor.translateAlternateColorCodes('&', args[0]);
+				String checkregex = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', args[0]));
+				String nok = args[0].replace("&k", "");
+				String nick = ChatColor.BLACK+"~" + ChatColor.GRAY + "" +ChatColor.translateAlternateColorCodes('&', nok);
 				String nnc = ChatColor.stripColor(nick);
+
+				if (!Pattern.matches("^[0-9a-zA-Z\\u00C0-\\u00FF]*$", checkregex)) {
+					p.sendMessage(ChatColor.RED + "Sólo se admiten nicks con carácteres españoles.");
+					return true;
+				}
+
 				if(nnc.length() > 40 || nnc.length() < 3) {
 					p.sendMessage(ChatColor.RED+"Comprueba el tamaño del nick!");
 				} else if( args[0].equalsIgnoreCase("puto")||  args[0].equalsIgnoreCase("caca")||  args[0].equalsIgnoreCase("gay")||

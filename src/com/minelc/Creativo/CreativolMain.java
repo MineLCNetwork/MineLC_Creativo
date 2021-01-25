@@ -57,6 +57,7 @@ public class CreativolMain extends JavaPlugin implements CommandExecutor{
             getCommand("near").setExecutor(new cmdNear());
             // getCommand("sit").setExecutor(new Sit());
             getCommand("tell").setExecutor(new CmdTell());
+            getCommand("sc").setExecutor(new StaffChatCMD());
             getCommand("mem").setExecutor(new CommandExecutor() {
     			
     			@Override

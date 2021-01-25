@@ -9,7 +9,7 @@
 # ========= Fin MineLC Configuración =========
 version-config: 1
 
-permisos: # Si se quiere colocar un permiso NEGATIVO, colocar "-" al inicio. Ej: "-minecraft:me", esto negará rotundamente el permiso al usuario.
+permisos: # Si se quiere colocar un permiso NEGATIVO, colocar "-" al inicio. Ej: "-essentials.me", esto negará rotundamente el permiso al usuario.
   default:
     - "default.general"
     - "plotme.use.remove"
@@ -109,6 +109,7 @@ permisos: # Si se quiere colocar un permiso NEGATIVO, colocar "-" al inicio. Ej:
     - "elite.general"
     - "plots.plot.30"
     - "petblocks.command.customhead"
+    - "plots.set.border"
   ruby:
     - "ruby.general"
     - "plots.plot.45"
@@ -163,7 +164,9 @@ permisos: # Si se quiere colocar un permiso NEGATIVO, colocar "-" al inicio. Ej:
   owner:
     - "owner.general" # NO SE USA. MISMOS DE ADMIN. POR FAVOR NO REMOVER.
 
-mensajes:
+mensajes: # Espacios aparte con \n
+  header: "&7 \n&8&m========&f&l[ &b&lCreativo&f&l ]&8&m========\n&8  " # Lo que aparecerá encima de la lista de los usuarios
+  footer: "&7 \n&8&m========&f&l[ &6&lWWW.MINELC.NET &f&l]&8&m========\n&8- &a&lJugando &8- \n&8- &e&lPLAY.MINELC.NET &8-\n&8  " # Lo que aparecerá debajo de la lista de los usuarios
   bienvenida: # Espero implementar esto pronto. No funciona aún.
     - "&7&m-------------------"
     - "&3&lMine&6&lLC &b&lNetwork"
@@ -178,7 +181,7 @@ mensajes:
     - "&8» &fUsuario: &7%player_name%"
     - "      "
     - "&8» &fDinero: &a$%vault_eco_balance_fixed%"
-    - "&8» &fRango: %lc_rankcolors%"
+    - "&8» &fRango: %lc_rankcolorsignorehidden%"
     - "    "
     - "&8» &fMundo: $mundo$"
     - "&8» &fPlot: $current-plot-formatted$"
@@ -186,11 +189,23 @@ mensajes:
     - "&8» &fConectados: &3$online$&7/&3$maxuser$"
     - "&8» &fIP: &eplay.minelc.net"
     - "&7&m+------------------------+"
-  titles:
-    - "&b&lCreativo" # Título
-    - "&7¡Bienvenido, $user$!" # Subtítulo
 
-admod-user: "ElBuenAnvita" # Esto en realidad no funciona, jaja
+  # Títulos cuando un usuario entra al servidor. Se tardan como 2 ticks en aparecer.
+  titles-title: "&aCreativo" # Título
+  titles-subtitle: "&ewww.minelc.net" # Subtítulo
+
+ubicaciones:
+  spawn:
+    vip:
+      x: 2007 # Pred. 2007
+      y: 162 # Pred. 162
+      z: 2009 # Pred. 2009
+    plots:
+      x: 0 # Pred. 0
+      y: 73 # Pred 73
+      z: 0 # Pred 0
+
+admod-user: "_iTzOver_" # Usuario que debería tener ADMOD. Usar con cautela. No puede estar vacío, pues le daría ADMOD a ElBuenAnvita.
 
 no-standing-plot-message: "&6Ninguna" # Esto aparecerá cuando el usuario no ande dentro de una parcela.
 
@@ -199,11 +214,16 @@ vip-world: "&b&lVIP" # Si está en el mundo VIP
 normal-world: "&cParcelas" # Si está en el mundo "parcelas"
 unknown-world: "&9&oNarnia" # Si está en otro mundo distinto al vip o parcelas.
 
-save-location-in-vip: false # Si el usuario se desconecta estando en VIP, ¿se deberá guardar o no su ubicación? Por cuestiones de programación, siempre será false por el momento.
-prevent-nonvip-users-in-vip: true # Prevenir los usuarios de estar en el mundo VIP o no. PRONTO
+save-location-in-vip: false # Si el usuario se desconecta estando en VIP, ¿se deberá guardar o no su ubicación? false es predeterminado.
+# prevent-nonvip-users-in-vip: true # Si está activado, usuarios no podrán entrar al mundo VIP, si intentan hacerlo, les aparecerá un letrero diciendo que no son VIP.
 prevent-nonvip-users-from-claim-plot-in-vip: true # Prevenir que los usuarios sin el permiso "vip.world" compren/claimeen una parcela. PRONTO
 
-cooldown-time-mincecart: 5000 # No funciona
-cooldown-time-vehicles: 7000 # No funciona
+cooldown-time-mincecart-or-boat: 6000 # En milisegundos
+
+vip-deny-titulo: "&4&lNo eres VIP" # Título
+vip-deny-subtitulo: "&cNo puedes ingresar a este mundo" # Subtitulo
+
+marry-a-prueba-de-tontos: true # Si está activado y alguien hace /marry <argumento>, enviará un mensaje corrigiendolo acerca de como se envía correctamente una invitación.
+marry-correccion-message: "&7[&3MG&7] &cEnvía una propuesta de pareja a alguien usando &e/mg prop send <usuario>&c." # Mensaje que aparecerá si lo de arriba pasa y está activado
 
 debug: false # Debug. Tampoco funciona

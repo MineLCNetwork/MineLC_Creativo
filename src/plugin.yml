@@ -1,6 +1,6 @@
 name: MineLC_Creativo
 main: com.minelc.Creativo.CreativolMain
-version: 1.5-RELASE
+version: 1.6-PRERELASE11
 api-version: 1.15
 authors: [Leo018, obed_007, ElBuenAnvita]
 depend: [MineLC_CORE, PlaceholderAPI, PlotSquared]
@@ -62,3 +62,6 @@ commands:
    tell:
      description: Envía un mensaje privado a alguien
      aliases: [w, whisper, msg]
+   sc:
+     description: scac
+     aliases: [staffchat]

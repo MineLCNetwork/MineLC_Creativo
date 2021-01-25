@@ -100,7 +100,7 @@ public class PlayerListener implements Listener {
 		}
 
 	    if (msg.startsWith("/p set border") || (msg.startsWith("/plot set border"))) {
-	    	if(event.getPlayer().hasPermission("svip.general")) {
+	    	if(event.getPlayer().hasPermission("plots.set.border")) {
 				if (!args[3].startsWith("44:")) {
 					event.setCancelled(true);
 					event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6P2&8] &cEl bloque que estás introduciendo no está permitido."));
@@ -112,6 +112,36 @@ public class PlayerListener implements Listener {
 			} else {
 	    		event.setCancelled(true);
 	    		event.getPlayer().sendMessage(ChatColor.RED+"Este comando solo pueden usarlo SVIP en adelante");
+			}
+		}
+
+	    if(CreativolMain.get().getBooleanConfig("marry-a-prueba-de-tontos", true)) {
+			if (msg.startsWith("/marry") && args.length == 2) {
+				event.setCancelled(true);
+				event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("marry-correccion-message", "&7[&3MG&7] &cEnvía una propuesta de pareja a alguien usando &e/mg prop send <usuario>&c.")));
+			}
+		}
+
+	    if(CreativolMain.get().getBooleanConfig("prevent-nonvip-users-from-claim-plot-in-vip", true)) {
+	    	if ((msg.startsWith("/p claim")) ||
+					(msg.startsWith("/plot claim")) ||
+					(msg.startsWith("/p auto")) ||
+					(msg.startsWith("/plot auto")) ||
+					(msg.startsWith("/p a")) ||
+					(msg.startsWith("/plot a"))) {
+	    		if(event.getPlayer().getLocation().getWorld().getName().equals("vip")) {
+					if (!event.getPlayer().hasPermission("vip.world")) {
+						event.setCancelled(true);
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("prevent-nonvip-users-from-claim-plot-in-vip-message", "&8[&6P2&8] &cNo puedes reclamar parcelas en este mundo sin un tiquete.")));
+					}
+				}
+			}
+		}
+
+	    if(msg.startsWith("/eco")) {
+	    	if(isAdmod(event.getPlayer())) {
+				event.setCancelled(true);
+				event.getPlayer().sendMessage(ChatColor.RED+"No puedes hacer esto. Debes otorgar o remover dinero sólo mediante consola.");
 			}
 		}
 	  }
@@ -271,11 +301,12 @@ public class PlayerListener implements Listener {
 				long current = System.currentTimeMillis();
 				long cd = interact_cd.get(e.getPlayer());
 				
-				if(current - cd > 60000) {
+				if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
 					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
 				} else {
 					e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
 					e.setCancelled(true);
+					Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó colcoar un MINECART mientras estaba bajo cooldown, le faltaban " + (current - cd) + " ms.");
 				}
 			} else {
 				interact_cd.put(e.getPlayer(), System.currentTimeMillis());
@@ -285,11 +316,12 @@ public class PlayerListener implements Listener {
 				long current = System.currentTimeMillis();
 				long cd = interact_cd.get(e.getPlayer());
 				
-				if(current - cd > 60000) {
+				if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
 					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
 				} else {
 					e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
 					e.setCancelled(true);
+					Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó colcoar un BOAT mientras estaba bajo cooldown, le faltaban " + (current - cd) + " ms.");
 				}
 			} else {
 				interact_cd.put(e.getPlayer(), System.currentTimeMillis());
@@ -322,9 +354,11 @@ public class PlayerListener implements Listener {
 		Jugador jug = Jugador.getJugador(e.getPlayer());
 		jug.setBukkitPlayer(e.getPlayer());
 		e.getPlayer().setGameMode(GameMode.CREATIVE);
+
 		if(e.getPlayer().getWorld() != Bukkit.getWorld("plots")) { // Ahora le puse de nombre "plots", no "parcelas".
 			e.getPlayer().teleport(Bukkit.getWorld("plots").getSpawnLocation());
 		}
+
 		addPermissionDefault(e.getPlayer());
 
 		if(e.getPlayer().getLocation().getBlock().getType() == Material.NETHER_PORTAL || e.getPlayer().getLocation().getBlock().getType() == Material.END_PORTAL_FRAME ||
@@ -346,9 +380,17 @@ public class PlayerListener implements Listener {
 			@Override
 			public void run() {
 				onJoin(e.getPlayer());
+				setFuterHeader(e.getPlayer());
 				Bukkit.getLogger().info("[Debug] Se ha cargado el usuario " + e.getPlayer().getName() + " (onJoin).");
 			}
-		}, 10L);
+		}, 2L);
+
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CreativolMain.get(), new Runnable() {
+			@Override
+			public void run() {
+				enviarTitulosIniciales(e.getPlayer());
+			}
+		}, 20L);
 	}
 	
 	private void bucle(Player p4) {
@@ -367,6 +409,16 @@ public class PlayerListener implements Listener {
 			}
 		}, 0L,20);
 		
+	}
+
+	public void enviarTitulosIniciales(Player p) {
+		String titulos = CreativolMain.get().getStringConfig("mensajes.titles-title", "&aCreativo");
+		titulos = ChatColor.translateAlternateColorCodes('&', titulos);
+
+		String subtitulos = CreativolMain.get().getStringConfig("mensajes.titles-subtitle", "&ewww.minelc.net");
+		subtitulos = ChatColor.translateAlternateColorCodes('&', subtitulos);
+
+		p.sendTitle(titulos, subtitulos, 20, 60, 20);
 	}
 
 	private String formatoScoreboard(String str, Jugador jug) {
@@ -389,7 +441,13 @@ public class PlayerListener implements Listener {
 		str = str.replace("$online$", Bukkit.getServer().getOnlinePlayers().size() + "");
 		str = str.replace("$maxuser$", Bukkit.getServer().getMaxPlayers() + "");
 
-		return PlaceholderAPI.setPlaceholders(p.getPlayer(), ChatColor.translateAlternateColorCodes('&', str));
+		str = PlaceholderAPI.setPlaceholders(p.getPlayer(), ChatColor.translateAlternateColorCodes('&', str));
+
+		if(str.length() > 40) {
+			str = str.substring(0,40);
+		}
+
+		return str;
 	}
 
 	public void setScoreboard(Jugador jugOnline) {
@@ -450,6 +508,9 @@ public class PlayerListener implements Listener {
 					tm.setColor(jugTM.getNameTagColor());
 				} else if (jugTM.is_YOUTUBER()) {
 					tm.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + "YouTuber " + jugTM.getNameTagColor());
+					tm.setColor(jugTM.getNameTagColor());
+				} else if (jugTM.is_MiniYT()) {
+					tm.setPrefix(ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT ");
 					tm.setColor(jugTM.getNameTagColor());
 				} else if (jugTM.is_BUILDER()) {
 					tm.setPrefix(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+jugTM.getNameTagColor());
@@ -517,6 +578,9 @@ public class PlayerListener implements Listener {
 				} else if (jugOnline.is_YOUTUBER()) {
 					tm.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + "YouTuber " + jugOnline.getNameTagColor());
 					tm.setColor(jugOnline.getNameTagColor());
+				} else if (jugOnline.is_MiniYT()) {
+					tm.setPrefix(ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT ");
+					tm.setColor(jugOnline.getNameTagColor());
 				} else if (jugOnline.is_BUILDER()) {
 					tm.setPrefix(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+jugOnline.getNameTagColor());
 					tm.setColor(jugOnline.getNameTagColor());
@@ -549,6 +613,18 @@ public class PlayerListener implements Listener {
 		jugOnline.getBukkitPlayer().setScoreboard(sb);
 	}
 
+	private void setFuterHeader(Player p) {
+		String header = CreativolMain.get().getStringConfig("mensajes.header", "&7 \n&b&lCreativo\n&8  ");
+		header = ChatColor.translateAlternateColorCodes('&', header);
+
+		p.setPlayerListHeader(header);
+
+		String futer = CreativolMain.get().getStringConfig("mensajes.footer", "&7 \n&9&lWWW.MINELC.NET\n&a&lJugando en &e&lPLAY.MINELC.NET\n&8  ");
+		futer = ChatColor.translateAlternateColorCodes('&', futer);
+
+		p.setPlayerListFooter(futer);
+	}
+
 	private void onJoin(Player p) {
 		Jugador j = Jugador.getJugador(p);
 		Player enlineados = j.getBukkitPlayer();
@@ -570,7 +646,7 @@ public class PlayerListener implements Listener {
 			if(j.is_ELITE()) {
 				addPermissionELITE(p);
 			}
-			if(j.is_RUBY() || j.is_BUILDER()) {
+			if(j.is_RUBY() || j.is_BUILDER() || j.is_MiniYT() || j.is_RUBY()) {
 				addPermissionsRuby(p);
 			}
 			if(j.is_MODERADOR()) {
@@ -585,18 +661,27 @@ public class PlayerListener implements Listener {
 	public boolean isAdmod(Player player)
 	{
 		String name = player.getName();
-		if(name.equalsIgnoreCase("ElBuenAnvita"))
-		{
-			return true;
-		}
-		return false;
+		return name.equalsIgnoreCase(CreativolMain.get().getStringConfig("admod-user", "ElBuenAnvita"));
 	}
 	@EventHandler
 	public void onPortal(PlayerPortalEvent e) {
 		Player p = e.getPlayer();
 		p.teleport(p.getWorld().getSpawnLocation());
 	}
-	
+
+	public void onTeleportToEnd(PlayerTeleportEvent e) {
+		Player p = e.getPlayer();
+		if (e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL) {
+			e.setCancelled(true);
+			p.sendMessage(ChatColor.GREEN+"Fuiste enviado al spawn de Parcelas.");
+			int x = CreativolMain.get().getIntConfig("ubicaciones.spawn.plots.x", 0);
+			int y = CreativolMain.get().getIntConfig("ubicaciones.spawn.plots.y", 73);
+			int z = CreativolMain.get().getIntConfig("ubicaciones.spawn.plots.z", 0);
+			Location loc = new Location(Bukkit.getWorld("plots"), x, y, z);
+			p.teleport(loc);
+		}
+	}
+
 	@EventHandler
 	public void onExplosion(BlockExplodeEvent e) {
 		e.setCancelled(true);
@@ -627,12 +712,12 @@ public class PlayerListener implements Listener {
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CreativolMain.get(), new Runnable() {
 					@Override
 					public void run() {
-						e.getPlayer().sendTitle(ChatColor.DARK_RED + "" + ChatColor.BOLD + "No eres VIP", ChatColor.RED + "No puedes ingresar a este mundo", 10, 100, 20);
+						e.getPlayer().sendTitle(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-titulo", "&4&lNo eres VIP")), ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-subtitulo", ChatColor.RED + "No puedes ingresar a este mundo")), 10, 100, 20);
 					}
-				}, 20L);
+				}, 25L);
 				e.getPlayer().teleport(loc);
 				e.getPlayer().sendMessage(ChatColor.GREEN+"Fuiste enviado al spawn");
-				Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó ingresar al VIP pero no era VIP o no tenía un tiquete VIP!");
+				Bukkit.getLogger().info("[Creativo_CORE] El usuario " + e.getPlayer().getName() + " intentó ingresar al VIP pero no era VIP o no tenía un tiquete VIP!");
 			}
 		}
 
@@ -693,6 +778,8 @@ public class PlayerListener implements Listener {
 					e.setFormat(ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.AYUDANTE.name()+" "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_YOUTUBER())
 					e.setFormat(ChatColor.RED+""+ChatColor.BOLD+"You"+ChatColor.WHITE+""+ChatColor.BOLD+"Tuber "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
+				else if(j.is_MiniYT())
+					e.setFormat(ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT " + j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY + " » " + ChatColor.GRAY + ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_BUILDER())
 					e.setFormat(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_RUBY())
@@ -724,6 +811,8 @@ public class PlayerListener implements Listener {
 					e.setFormat(ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.AYUDANTE.name()+" "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_YOUTUBER())
 					e.setFormat(ChatColor.RED+""+ChatColor.BOLD+"You"+ChatColor.WHITE+""+ChatColor.BOLD+"Tuber "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
+				else if (j.is_MiniYT())
+					e.setFormat(ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT " + j.getNameTagColor() + nickname + ChatColor.DARK_GRAY + " » " + ChatColor.GRAY + ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_BUILDER())
 					e.setFormat(ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_RUBY())
@@ -764,6 +853,8 @@ public class PlayerListener implements Listener {
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.AYUDANTE.name()+" "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_YOUTUBER())
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.RED+""+ChatColor.BOLD+"You"+ChatColor.WHITE+""+ChatColor.BOLD+"Tuber "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
+				else if(j.is_MiniYT())
+					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT " + j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY + " » " + ChatColor.GRAY + ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_BUILDER())
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+j.getNameTagColor() + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_RUBY())
@@ -795,6 +886,8 @@ public class PlayerListener implements Listener {
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.DARK_PURPLE+""+ChatColor.BOLD+Ranks.AYUDANTE.name()+" "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_YOUTUBER())
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.RED+""+ChatColor.BOLD+"You"+ChatColor.WHITE+""+ChatColor.BOLD+"Tuber "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
+				else if(j.is_MiniYT())
+					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.WHITE + "" + ChatColor.BOLD + "Mini" + ChatColor.RED + "" + ChatColor.BOLD + "YT " + j.getNameTagColor() + nickname + ChatColor.DARK_GRAY + " » " + ChatColor.GRAY + ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_BUILDER())
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+Ranks.BUILDER.name()+" "+j.getNameTagColor() + nickname + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+ChatColor.translateAlternateColorCodes('&', msg));
 				else if(j.is_RUBY())
