@@ -45,8 +45,8 @@ public class cmdNick implements CommandExecutor {
 				s.sendMessage(ChatColor.GREEN+ "Usa: /nick (Nuevo Nick)");
 			}
 		} else if(args.length == 1) {
-			if(p.getName().equals("obed_007") || jug.is_VIP()|| jug.is_BUILDER() || jug.is_ELITE() || jug.is_RUBY() || jug.is_SVIP() || jug.is_AYUDANTE()||
-			   jug.is_MODERADOR() || jug.is_Admin() || jug.is_Owner()) {
+			if (p.hasPermission("minelc.creativo.nick")) {
+			// if(p.getName().equals("obed_007") || jug.is_VIP()|| jug.is_BUILDER() || jug.is_ELITE() || jug.is_RUBY() || jug.is_SVIP() || jug.is_AYUDANTE()|| jug.is_MODERADOR() || jug.is_Admin() || jug.is_Owner()) {
 				String checkregex = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', args[0]));
 				String nok = args[0].replace("&k", "");
 				String nick = ChatColor.BLACK+"~" + ChatColor.GRAY + "" +ChatColor.translateAlternateColorCodes('&', nok);

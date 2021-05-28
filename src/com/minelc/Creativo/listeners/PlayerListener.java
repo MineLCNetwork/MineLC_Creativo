@@ -1,13 +1,18 @@
 package com.minelc.Creativo.listeners;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
+import com.gamingmesh.jobs.Jobs;
+import com.gamingmesh.jobs.api.JobsExpGainEvent;
+import com.gamingmesh.jobs.api.JobsLevelUpEvent;
+import com.gamingmesh.jobs.api.JobsPaymentEvent;
+import com.gamingmesh.jobs.container.JobsPlayer;
 import com.github.intellectualsites.plotsquared.bukkit.events.PlayerEnterPlotEvent;
 import com.github.intellectualsites.plotsquared.bukkit.events.PlayerLeavePlotEvent;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -56,6 +61,7 @@ public class PlayerListener implements Listener {
 	public static Map<Block, Long> redstonecd = Maps.newHashMap(); //clear
 	public static Map<Block, Integer> redstonemaxvl = Maps.newHashMap(); //clear
 	public static Map<Player, Long> interact_cd = Maps.newHashMap();
+	public static HashMap<String, Integer> gainedtoday = Maps.newHashMap();
 	public static int Tiempo = 60;
 	public static int taskID;
 
@@ -66,7 +72,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void shiftEvent(PlayerToggleSneakEvent e) {
     	for(Entity ent : e.getPlayer().getNearbyEntities(0.5, 0.5, 0.5)) {
-    		if(ent.getCustomName() == "sit") {
+    		if(ent.getCustomName() != null && ent.getCustomName().equals("sit")) {
     			ent.remove();
     		}
     	}
@@ -116,9 +122,29 @@ public class PlayerListener implements Listener {
 		}
 
 	    if(CreativolMain.get().getBooleanConfig("marry-a-prueba-de-tontos", true)) {
-			if (msg.startsWith("/marry") && args.length == 2) {
-				event.setCancelled(true);
-				event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("marry-correccion-message", "&7[&3MG&7] &cEnvía una propuesta de pareja a alguien usando &e/mg prop send <usuario>&c.")));
+			if (msg.startsWith("/marry") && args.length > 1) {
+				switch (args[1]) {
+					case "gender":
+						event.setCancelled(false);
+						break;
+					case "list":
+						event.setCancelled(true);
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&3MG&7] &7Revisa las parejas por medio del comando &e/mg list top-partner"));
+						break;
+					case "chat":
+						event.setCancelled(true);
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&3MG&7] &7Eso hazlo en &e/mg partner chat&7, si se coloca en &3true&7, después escribe los mensajes"));
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&3MG&7] &7Puedes volver a deshabilitar el chat de parejas usando de nuevo &e/mg partner chat&7"));
+						break;
+					case "divorce":
+						event.setCancelled(true);
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[&3MG&7] &7¿Tan rápido? Eso es con &e/mg partner divorce"));
+						break;
+					default:
+						event.setCancelled(true);
+						event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("marry-correccion-message", "&7[&3MG&7] &cEnvía una propuesta de pareja a alguien usando &e/mg prop send <usuario>&c.")));
+						break;
+				}
 			}
 		}
 
@@ -226,14 +252,13 @@ public class PlayerListener implements Listener {
 				} else {
 					redstonemaxvl.put(e.getBlock(), 1);
 				}
-			} else if(redstonemaxvl.containsKey(e.getBlock())) {
-				redstonemaxvl.remove(e.getBlock());
-			}
+			} else redstonemaxvl.remove(e.getBlock());
 			
 			redstonecd.put(e.getBlock(), System.currentTimeMillis()+500);
 		}
 	}
-	
+
+	/*
 	@EventHandler
 	public void onRedStone(BlockRedstoneEvent e) {
 		if(redstonecd.containsKey(e.getBlock()) && redstonecd.get(e.getBlock()) > System.currentTimeMillis()) {
@@ -253,7 +278,7 @@ public class PlayerListener implements Listener {
 		}
 		
 		redstonecd.put(e.getBlock(), System.currentTimeMillis()+500);
-	}
+	} */
 	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onFiewWork(ProjectileLaunchEvent e) {
@@ -297,34 +322,42 @@ public class PlayerListener implements Listener {
 				e.getPlayer().getInventory().setItemInMainHand(null);
 			}
 		} else if(type.name().contains("MINECART")) {
-			if(interact_cd.containsKey(e.getPlayer())) {
-				long current = System.currentTimeMillis();
-				long cd = interact_cd.get(e.getPlayer());
-				
-				if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
-					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
-				} else {
-					e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
-					e.setCancelled(true);
-					Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó colcoar un MINECART mientras estaba bajo cooldown, le faltaban " + (current - cd) + " ms.");
-				}
+			if (e.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase("vip")) {
+				e.setCancelled(true);
+				e.getPlayer().sendMessage("¡Sólo puedes colocar minecarts en el mundo normal!");
 			} else {
-				interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+				if(interact_cd.containsKey(e.getPlayer())) {
+					long current = System.currentTimeMillis();
+					long cd = interact_cd.get(e.getPlayer());
+
+					if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
+						interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+					} else {
+						e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
+						e.setCancelled(true);
+					}
+				} else {
+					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+				}
 			}
 		} else if(type.name().contains("BOAT")) {
-			if(interact_cd.containsKey(e.getPlayer())) {
-				long current = System.currentTimeMillis();
-				long cd = interact_cd.get(e.getPlayer());
-				
-				if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
-					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
-				} else {
-					e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
-					e.setCancelled(true);
-					Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " intentó colcoar un BOAT mientras estaba bajo cooldown, le faltaban " + (current - cd) + " ms.");
-				}
+			if (e.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase("vip")) {
+				e.setCancelled(true);
+				e.getPlayer().sendMessage("¡Sólo puedes colocar botes en el mundo normal!");
 			} else {
-				interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+				if(interact_cd.containsKey(e.getPlayer())) {
+					long current = System.currentTimeMillis();
+					long cd = interact_cd.get(e.getPlayer());
+
+					if(current - cd > CreativolMain.get().getIntConfig("cooldown-time-mincecart-or-boat", 6000)) {
+						interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+					} else {
+						e.getPlayer().sendMessage("Espera 1 minuto antes de colocar este bloque!");
+						e.setCancelled(true);
+					}
+				} else {
+					interact_cd.put(e.getPlayer(), System.currentTimeMillis());
+				}
 			}
 		}
 	}
@@ -381,6 +414,7 @@ public class PlayerListener implements Listener {
 			public void run() {
 				onJoin(e.getPlayer());
 				setFuterHeader(e.getPlayer());
+				setScoreboard(jug);
 				Bukkit.getLogger().info("[Debug] Se ha cargado el usuario " + e.getPlayer().getName() + " (onJoin).");
 			}
 		}, 2L);
@@ -415,21 +449,26 @@ public class PlayerListener implements Listener {
 		String titulos = CreativolMain.get().getStringConfig("mensajes.titles-title", "&aCreativo");
 		titulos = ChatColor.translateAlternateColorCodes('&', titulos);
 
-		String subtitulos = CreativolMain.get().getStringConfig("mensajes.titles-subtitle", "&ewww.minelc.net");
+		String subtitulos = CreativolMain.get().getStringConfig("mensajes.titles-subtitle", "&6www.minelc.net");
 		subtitulos = ChatColor.translateAlternateColorCodes('&', subtitulos);
 
 		p.sendTitle(titulos, subtitulos, 20, 60, 20);
+		p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5F, 0.5F);
 	}
 
 	private String formatoScoreboard(String str, Jugador jug) {
 		Player p = jug.getBukkitPlayer();
 
-		if(p.getLocation().getWorld().getName().equals("vip")) {
-			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("vip-world", "&b&lVIP"));
-		} else if(p.getLocation().getWorld().getName().equals("plots")) {
+		if (p.getLocation().getWorld() == null || p.getLocation().getWorld().getName().isEmpty()) {
 			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("normal-world", "&cParcelas"));
 		} else {
-			str = str.replace("$mundo$", CreativolMain.get().getStringConfig("unknown-world", "&9&oNarnia"));
+			if (p.getLocation().getWorld().getName().equals("vip")) {
+				str = str.replace("$mundo$", CreativolMain.get().getStringConfig("vip-world", "&b&lVIP"));
+			} else if (p.getLocation().getWorld().getName().equals("plots")) {
+				str = str.replace("$mundo$", CreativolMain.get().getStringConfig("normal-world", "&cParcelas"));
+			} else {
+				str = str.replace("$mundo$", CreativolMain.get().getStringConfig("unknown-world", "&9&oNarnia"));
+			}
 		}
 
 		if(PlaceholderAPI.setPlaceholders(p.getPlayer(), "%plotsquared_currentplot_owner%").isEmpty()) {
@@ -658,8 +697,7 @@ public class PlayerListener implements Listener {
 	}
 	
 
-	public boolean isAdmod(Player player)
-	{
+	public boolean isAdmod(Player player) {
 		String name = player.getName();
 		return name.equalsIgnoreCase(CreativolMain.get().getStringConfig("admod-user", "ElBuenAnvita"));
 	}
@@ -706,18 +744,13 @@ public class PlayerListener implements Listener {
 	public void onPlayerTeleportWorld(PlayerChangedWorldEvent e) {
 		Location loc = new Location(e.getFrom(), -80.518, 71, -80.615);
 		if(e.getPlayer().getWorld().getName().equals("vip")) {
-			Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " esta en vip ahora");
+			// Bukkit.getLogger().info("El usuario " + e.getPlayer().getName() + " esta en vip ahora");
 			if(!e.getPlayer().hasPermission("vip.world")) {
 				e.getPlayer().sendMessage(ChatColor.RED+"¡No puedes entrar a este mundo!");
-				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CreativolMain.get(), new Runnable() {
-					@Override
-					public void run() {
-						e.getPlayer().sendTitle(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-titulo", "&4&lNo eres VIP")), ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-subtitulo", ChatColor.RED + "No puedes ingresar a este mundo")), 10, 100, 20);
-					}
-				}, 25L);
+				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CreativolMain.get(), () -> e.getPlayer().sendTitle(ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-titulo", "&4&lNo eres VIP")), ChatColor.translateAlternateColorCodes('&', CreativolMain.get().getStringConfig("vip-deny-subtitulo", ChatColor.RED + "No puedes ingresar a este mundo")), 10, 100, 20), 25L);
 				e.getPlayer().teleport(loc);
 				e.getPlayer().sendMessage(ChatColor.GREEN+"Fuiste enviado al spawn");
-				Bukkit.getLogger().info("[Creativo_CORE] El usuario " + e.getPlayer().getName() + " intentó ingresar al VIP pero no era VIP o no tenía un tiquete VIP!");
+				// Bukkit.getLogger().info("[Creativo_CORE] El usuario " + e.getPlayer().getName() + " intentó ingresar al VIP pero no era VIP o no tenía un tiquete VIP!");
 			}
 		}
 
@@ -751,15 +784,14 @@ public class PlayerListener implements Listener {
 		if(!msg.startsWith("!")) {
 			for(Player rc : Bukkit.getOnlinePlayers()) {
 				try {
-				if(rc.getWorld() == p.getWorld()) {
-					if(rc.getLocation().distance(p.getLocation()) > 500) {
-					e.getRecipients().remove(rc);
+					if(rc.getWorld() == p.getWorld()) {
+						if(rc.getLocation().distance(p.getLocation()) > 500) {
+						e.getRecipients().remove(rc);
+						}
+					} else {
+						e.getRecipients().remove(rc);
 					}
-				} else {
-					e.getRecipients().remove(rc);
-				}
-			} catch(Exception ex) {
-			}
+				} catch(Exception ex) { ex.printStackTrace(); }
 			}
 			if(nickname==null) {
 				if(j.isHideRank())
@@ -836,7 +868,7 @@ public class PlayerListener implements Listener {
 				e.setCancelled(true);
 				return;
 			}
-			if(nickname==null || nickname == "" || nickname == " ") {
+			if(nickname==null || nickname.equals("") || nickname.equals(" ")) {
 				if(j.isHideRank())
 					e.setFormat(ChatColor.GOLD+""+ChatColor.BOLD+ "GLOBAL " + ChatColor.YELLOW + PlayerName + ChatColor.DARK_GRAY+" » " + ChatColor.GRAY+msg);
 				else if(isAdmod(p))
@@ -913,9 +945,7 @@ public class PlayerListener implements Listener {
 		// Jugador jug = Jugador.getJugador(e.getPlayer());
 		Jugador.removeJugador(e.getPlayer().getName());
 		// scoreboard.getTeam(e.getPlayer().getName()).unregister();
-		if(interact_cd.containsKey(e.getPlayer())) {
-			interact_cd.remove(e.getPlayer());
-		}
+		interact_cd.remove(e.getPlayer());
 		for (Player all : Bukkit.getOnlinePlayers()) {
 			Jugador jugall = Jugador.getJugador(all);
 			setScoreboard(jugall);
@@ -930,14 +960,14 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	public void onKick(PlayerKickEvent e) {
-		e.setLeaveMessage(null);
+		e.setLeaveMessage("");
 	}
 
 	public void addPermissionDefault(Player p) {
 	    List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.default");
 	    int numRows = rows.size();
 
-        if(rows == null || rows.isEmpty()) {
+        if(rows.isEmpty()) {
             return;
         }
 
@@ -958,7 +988,7 @@ public class PlayerListener implements Listener {
 		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.vip");
 		int numRows = rows.size();
 
-		if(rows == null || rows.isEmpty()) {
+		if(rows.isEmpty()) {
 			return;
 		}
 
@@ -978,7 +1008,7 @@ public class PlayerListener implements Listener {
 		List<String> rows = CreativolMain.get().getConfig().getStringList("permisos.mod");
 		int numRows = rows.size();
 
-		if(rows == null || rows.isEmpty()) {
+		if(rows.isEmpty()) {
 			return;
 		}
 
@@ -1084,15 +1114,89 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerEnterPlot(PlayerEnterPlotEvent e) {
-		Player p = e.getPlayer();
-
-		setScoreboard(Jugador.getJugador(p));
+		try {
+			Player p = e.getPlayer();
+			setScoreboard(Jugador.getJugador(p));
+		} catch (Exception ignored) {}
 	}
 
 	@EventHandler
 	public void onPlayerExitPlot(PlayerLeavePlotEvent e) {
 		Player p = e.getPlayer();
-
 		setScoreboard(Jugador.getJugador(p));
+	}
+
+	@EventHandler
+	public void onUpgradeLevel(JobsLevelUpEvent e) {
+		JobsPlayer jp = e.getPlayer();
+		Player p = jp.getPlayer();
+		Calendar cal = Calendar.getInstance();
+		int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+
+		if (gainedtoday.containsKey(p.getName())) {
+			int nextleveltoday = 1;
+			for (String i : gainedtoday.keySet()) {
+				if(p.getName().equals(i)) {
+					nextleveltoday += gainedtoday.get(i);
+				}
+			}
+			gainedtoday.remove(p.getName());
+			gainedtoday.put(p.getName(), nextleveltoday);
+
+		} else {
+			gainedtoday.put(p.getName(), 1);
+		}
+
+		p.sendMessage("Has sido promovido al nivel ");
+	}
+
+	@EventHandler
+	public void onPaymentJob(JobsPaymentEvent e) {
+		Player p = e.getPlayer().getPlayer();
+		// Bukkit.getLogger().info("[Debug] Llamado el evento onPaymentJob (" + p.getName() + ")");
+
+		if (p == null) {
+			return;
+		}
+
+		if (gainedtoday.containsKey(p.getName())) {
+			int getlevel = 0;
+			for (String i : gainedtoday.keySet()) {
+				if(p.getName().equals(i)) {
+					getlevel = gainedtoday.get(i);
+				}
+			}
+			if (getlevel > 4) { // 5
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cYa has trabajado mucho por hoy"));
+				// p.sendMessage(ChatColor.RED + "Ya has trabajado mucho por hoy.");
+				e.setCancelled(true);
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPaymentExp(JobsExpGainEvent e) {
+		Player p = e.getPlayer().getPlayer();
+		// Bukkit.getLogger().info("[Debug] Llamado el evento onPaymentExp (" + p.getName() + ")");
+
+		if (p == null) {
+			return;
+		}
+
+		if (gainedtoday.containsKey(p.getName())) {
+			int getlevel = 0;
+			for (String i : gainedtoday.keySet()) {
+				if(p.getName().equals(i)) {
+					getlevel = gainedtoday.get(i);
+				}
+			}
+			if (getlevel > 4) { // 5
+				// Bukkit.getLogger().info("[Debug] User " + p.getName() + " trató de ganar nivel pero tenia " + getlevel);
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cYa has trabajado mucho por hoy"));
+				// p.sendMessage(ChatColor.RED + "Ya has trabajado mucho por hoy.");
+				e.setCancelled(true);
+			}
+			// Bukkit.getLogger().info("[Debug] El jugador " + p.getName() + " gano nivel. Ahora está en " + getlevel);
+		}
 	}
 }

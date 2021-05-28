@@ -46,5 +46,6 @@
     <orderEntry type="library" name="PlaceholderAPI-2.10.4" level="project" />
     <orderEntry type="library" name="PlotSquared-Bukkit-4.4.495" level="project" />
     <orderEntry type="library" name="MineLC_core_CS" level="project" />
+    <orderEntry type="library" name="Jobs4.16.3" level="project" />
   </component>
 </module>

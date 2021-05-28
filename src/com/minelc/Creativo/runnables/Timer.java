@@ -18,10 +18,16 @@ public class Timer implements Runnable {
 	@Override
 	public void run() {
 		//autoRestart
+		if (restartCount == 600) {
+			Bukkit.broadcastMessage(ChatColor.RED+"¡El servidor sera reiniciado en 10 minutos!");
+		}
+		if (restartCount == 30 || restartCount == 60) {
+			Bukkit.broadcastMessage(ChatColor.RED+"¡El servidor sera reiniciado en "+restartCount+" segundos!");
+		}
 		if(restartCount > 1 && restartCount <= 10) {
-		Bukkit.broadcastMessage(ChatColor.RED+"El servidor sera reiniciado en "+restartCount+" segundos!");
+			Bukkit.broadcastMessage(ChatColor.RED+"¡El servidor sera reiniciado en "+restartCount+" segundos!");
 		} else if(restartCount == 1) {
-			Bukkit.broadcastMessage(ChatColor.RED+"El servidor sera reiniciado en "+restartCount+" segundo!");
+			Bukkit.broadcastMessage(ChatColor.RED+"¡El servidor sera reiniciado en "+restartCount+" segundo!");
 			
 			//clear entities
 			for(World w : Bukkit.getWorlds()) {

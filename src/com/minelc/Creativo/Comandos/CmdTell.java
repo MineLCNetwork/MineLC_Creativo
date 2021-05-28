@@ -1,5 +1,6 @@
 package com.minelc.Creativo.Comandos;
 
+import com.minelc.Creativo.CreativolMain;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -19,9 +20,15 @@ public class CmdTell implements CommandExecutor {
             String msg = getMsg(args);
             if(r == null || !r.isOnline()) {
                 p.sendMessage(ChatColor.RED + "El jugador "+args[0]+" no está conectado.");
-            } else {
-                p.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + "yo" + ChatColor.GOLD + " -> " + ChatColor.RED + r.getName() + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
-                r.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + p.getName() + ChatColor.GOLD + ChatColor.GOLD + " -> "+ChatColor.RED + "yo"  + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
+            } else if (r == p) {
+                p.sendMessage(ChatColor.RED + "No puedes enviarte un mensaje a ti mismo.");
+            } else  {
+                CreativolMain.get().recentTell.remove(r);
+                CreativolMain.get().recentTell.put(r, p);
+                // p.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + "yo" + ChatColor.GOLD + " -> " + ChatColor.RED + r.getName() + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
+                p.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" +ChatColor.WHITE + "Yo" + ChatColor.DARK_GRAY + " -> " + ChatColor.WHITE + r.getName() + ChatColor.AQUA + "" + ChatColor.BOLD + "] " + ChatColor.WHITE + msg);
+                // r.sendMessage(ChatColor.GOLD + "[" +ChatColor.RED + p.getName() + ChatColor.GOLD + ChatColor.GOLD + " -> "+ChatColor.RED + "yo"  + ChatColor.GOLD + "] " + ChatColor.WHITE + msg);
+                r.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" +ChatColor.WHITE + p.getName() + ChatColor.DARK_GRAY + " -> "+ChatColor.WHITE + "Yo"  + ChatColor.AQUA + "" + ChatColor.BOLD + "] " + ChatColor.WHITE + msg);
             }
         }
 
@@ -29,10 +36,10 @@ public class CmdTell implements CommandExecutor {
     }
 
     private String getMsg(String[] args) {
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         for(int n = 1; n < args.length; n++) {
-            ret += " "+args[n];
+            ret.append(" ").append(args[n]);
         }
-        return ret;
+        return ret.toString();
     }
 }
